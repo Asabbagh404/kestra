@@ -584,7 +584,10 @@
         "success": "File(s) successfully imported",
         "error": "Error(s) occurred while importing the file(s)"
       },
-      "export": "Export as a ZIP file"
+      "export": "Export as a ZIP file",
+      "create": {
+        "success": "File uploaded"
+      }
     },
     "continue backfill":"Continue the backfill",
     "delete backfill": "Delete the backfill",
@@ -603,7 +606,12 @@
     "Set labels done": "Successfully set the labels of the execution",
     "bulk set labels": "Are you sure you want to set labels to <code>{executionCount}</code>  executions(s)?",
     "dependencies loaded": "Dependencies loaded",
-    "loaded x dependencies": "{count} dependencies loaded"
+    "loaded x dependencies": "{count} dependencies loaded",
+    "file name": "File name",
+    "folder name": "Folder name",
+    "add folder": "Add folder",
+    "add file": "Add file",
+    "content": "Content"
   },
   "fr": {
     "id": "Identifiant",
@@ -1177,6 +1185,9 @@
         "success": "Fichier(s) importé(s) avec succès",
         "error": "Une erreur est survenue lors de l'importation"
       },
+      "create": {
+        "success": "Fichier uploadé avec succès"
+      },
       "export": "Export as ZIP file"
     },
     "relative": "Relative",
@@ -1196,7 +1207,12 @@
     "Set labels done": "Labels ajoutés avec succès à l'exécution",
     "bulk set labels": "Etes-vous sûr de vouloir ajouter des labels à <code>{executionCount}</code>  exécutions(s)?",
     "dependencies loaded": "Dépendances chargées",
-    "loaded x dependencies": "{count} dépendances chargées"
+    "loaded x dependencies": "{count} dépendances chargées",
+    "file name": "Nom du fichier",
+    "folder name": "Nom du dossier",
+    "add folder": "Ajouter un dossier",
+    "add file": "Ajouter un fichier",
+    "content": "Content"
   }
 }
 

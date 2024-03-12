@@ -38,6 +38,12 @@ export default {
         listDirectoryContent(_, options) {
             return this.$http.get(`${apiUrl(this)}/namespaces/${options.namespace}/files/directory${options.path ? `?path=${options.path}` : ""}`)
         },
+        createFile(_, options) {
+            return this.$http.post(`${apiUrl(this)}/namespaces/${options.namespace}/files?path=${options.path}`, options.fileContent, {headers: {"Content-Type": "multipart/form-data"}})
+        },
+        createFolder(_, options) {
+            return this.$http.post(`${apiUrl(this)}/namespaces/${options.namespace}/files/directory?path=${options.path}`)
+        },
         exportFiles({_commit}, options) {
             this.$http.get(`${apiUrl(this)}/namespaces/${options.namespace}/files/export`)
                 .then(response => Utils.downloadUrl(response.request.responseURL, options.namespace + "_files.zip"));

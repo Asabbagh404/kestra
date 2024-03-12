@@ -12,6 +12,16 @@
         </template>
     </top-nav-bar>
     <div v-if="namespace" class="editor-wrapper">
+        <el-button
+            :icon="FolderPlus"
+            class="p-2 m-0"
+            @click="showAddFolderOrFile('folder')"
+        />
+        <el-button
+            :icon="FilePlus"
+            class="p-2 m-0"
+            @click="showAddFolderOrFile('file')"
+        />
         <el-tree
             style="max-width: 600px"
             :data="foldersAsTree"
@@ -33,6 +43,43 @@
             {{ $t("namespace choice") }}
         </el-alert>
     </section>
+    <el-dialog
+        :title="modalTitle"
+        v-model="shouldShowAddFolderOrFile"
+        width="30%"
+    >
+        <el-form label-position="top" :rules="rules" :model="form" ref="form" @submit.prevent="false">
+            <el-form-item
+                :label="modalInputText"
+                required
+                prop="name"
+            >
+                <el-input props="name" v-model="form.name" />
+            </el-form-item>
+            <el-form-item
+                v-if="shouldShowAddFolderOrFile === 'file'"
+                :label="$t('fileContent')"
+                required
+                prop="fileContent"
+            >
+                <input
+                    type="file"
+                    action="#"
+                    @change="onFileContentUpload()"
+                    ref="file"
+                >
+            </el-form-item>
+            <div class="bottom-buttons">
+                <div class="right-align">
+                    <el-form-item class="submit">
+                        <el-button @click="onFileOrFolderSubmit($refs.form)" type="primary" native-type="submit">
+                            {{ $t('save') }}
+                        </el-button>
+                    </el-form-item>
+                </div>
+            </div>
+        </el-form>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -42,6 +89,9 @@
 </script>
 
 <script>
+    import FolderPlus from "vue-material-design-icons/LockOff.vue";
+    import FilePlus from "vue-material-design-icons/FilePlus.vue";
+
     import RouteContext from "../../mixins/routeContext";
     import RestoreUrl from "../../mixins/restoreUrl";
     import Monaco from "../../mixins/monaco";
@@ -61,6 +111,42 @@
             }
         },
         methods: {
+            onFileContentUpload() {
+                const formData = new FormData();
+                formData.append("fileContent", this.$refs.file.files[0]);
+                this.form.fileContent = formData;
+            },
+            onFileOrFolderSubmit(formRef) {
+                return formRef.validate(async (valid) => {
+                    try {
+                        if (!valid) {
+                            return false;
+                        }
+
+                        if (this.shouldShowAddFolderOrFile === "file") {
+                            await this.$store.dispatch("namespace/createFile", {
+                                namespace: this.namespace,
+                                path: this.form.name,
+                                fileContent: this.form.fileContent
+                            });
+                        } else {
+                            await this.$store.dispatch("namespace/createFolder", {
+                                namespace: this.namespace,
+                                path: this.form.name
+                            });
+                        }
+                        await this.getDirectoryContent(this.namespace);
+                        this.shouldShowAddFolderOrFile = false;
+                        this.$toast.success(this.$t("namespace files.create.success"));
+                    } catch (e) {
+                        this.$toast.error(this.$t("namespace files.create.error"));
+                    }
+
+                });
+            },
+            showAddFolderOrFile(type) {
+                this.shouldShowAddFolderOrFile = type;
+            },
             renderTree(h, {data}) {
                 return h("span", {
                     class: "custom-node"
@@ -128,14 +214,23 @@
         },
         data() {
             return {
+                file: undefined,
+                form: {
+                    name: undefined,
+                    fileContent: undefined
+                },
+                shouldShowAddFolderOrFile: false,
                 folders: [],
                 content: "",
-                flow: null,
-                tabsNotSaved: [],
-                uploadFileName: undefined
             }
         },
         computed: {
+            modalInputText() {
+                return this.shouldShowAddFolderOrFile === "file" ? this.$t("file name") : this.$t("folder name")
+            },
+            modalTitle() {
+                return this.shouldShowAddFolderOrFile === "file" ? this.$t("add file") : this.$t("add folder")
+            },
             ...mapState("namespace", ["namespaces"]),
             routeInfo() {
                 return {
