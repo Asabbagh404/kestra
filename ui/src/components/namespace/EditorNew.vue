@@ -16,13 +16,14 @@
             style="max-width: 600px"
             :data="foldersAsTree"
             @node-click="handleNodeClick"
+            :render-content="renderTree"
         />
         <editor
+            class="editor"
             :full-height="false"
             :input="false"
             v-model="content"
             :navbar="true"
-            lang="json"
         />
     </div>
     <section v-else class="container">
@@ -57,27 +58,52 @@
             }
         },
         methods: {
+            renderTree(h, {data}) {
+                return h("span", {
+                    class: "custom-node"
+                }, [
+                    h("span", {
+                        class: "custom-node-label",
+                        "data-path": "toto"
+                    }, data.label)
+                ]);
+            },
             async getDirectoryContent(namespace, path = null) {
                 const {data} = await this.$store.dispatch("namespace/listDirectoryContent", {
                     namespace,
                     path
                 });
                 return Promise.all(data.map(async (node) => {
-                    // test
+                    const fullPath = (path ? path + "/" : "/") + node.fileName;
+                    node.text = fullPath
                     if (node.type === "File") return node;
                     const result = await this.getDirectoryContent(
                         namespace,
-                        (path ? path + "/" : "/") + node.fileName);
+                        fullPath);
                     node.children = result;
                     return node;
                 }));
             },
-            async handleNodeClick(data) {
-                console.log(data.label)
+            async extractParentPath(node, suffix = "") {
+                let fullPath = ""
+                let currentNode = node.parent
+                while (currentNode) {
+                    if (!currentNode.data.label) {
+                        currentNode = currentNode.parent
+                        continue
+                    }
+                    fullPath = currentNode.data.label + "/" + fullPath
+                    currentNode = currentNode.parent
+                }
+                fullPath = fullPath + suffix;
+                return fullPath;
+            },
+            async handleNodeClick(data, node) {
+                const fullPath = await this.extractParentPath(node, data.label)
                 if (data.children.length > 0) return;
                 const {data: fileContent} = await this.$store.dispatch("namespace/getFileContent", {
                     namespace: this.namespace,
-                    path: "/" + data.label
+                    path: "/" + fullPath
                 });
                 this.content = fileContent;
             },
@@ -99,7 +125,7 @@
         data() {
             return {
                 folders: [],
-                content: "test",
+                content: "",
                 flow: null,
                 tabsNotSaved: [],
                 uploadFileName: undefined
@@ -127,8 +153,5 @@
         width: fit-content;
     }
     .editor-wrapper {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
     }
 </style>
