@@ -24,6 +24,8 @@
             :input="false"
             v-model="content"
             :navbar="true"
+            highlight
+            :lang="extensionToMonacoLang"
         />
     </div>
     <section v-else class="container">
@@ -42,12 +44,13 @@
 <script>
     import RouteContext from "../../mixins/routeContext";
     import RestoreUrl from "../../mixins/restoreUrl";
+    import Monaco from "../../mixins/monaco";
     import {mapState} from "vuex";
     import {storageKeys} from "../../utils/constants";
 
 
     export default {
-        mixins: [RouteContext, RestoreUrl],
+        mixins: [RouteContext, RestoreUrl, Monaco],
         async created() {
             if (!this.namespace) return;
             this.folders = this.folders = await this.getDirectoryContent(this.namespace);
@@ -105,6 +108,7 @@
                     namespace: this.namespace,
                     path: "/" + fullPath
                 });
+                this.extension = data.label.split(".").pop();
                 this.content = fileContent;
             },
             namespaceUpdate(namespace) {
